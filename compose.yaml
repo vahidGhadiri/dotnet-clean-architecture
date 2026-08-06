@@ -9,10 +9,12 @@
       minio:
         condition: service_healthy
     environment:
+      - TokenKey=${TOKEN_KEY}
       - MinIO__Endpoint=${MINIO_ENDPOINT}
       - MinIO__AccessKey=${MINIO_ACCESS_KEY}
       - MinIO__SecretKey=${MINIO_SECRET_KEY}
       - MinIO__BucketName=${MINIO_BUCKET_NAME}
+      - ASPNETCORE_ENVIRONMENT=Development
 
   minio:
     image: minio/minio
@@ -20,8 +22,8 @@
       - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
