@@ -25,7 +25,7 @@ public class UploadPhotoUseCase(
                 errorCode: "not_found"
             );
 
-        var key = $"{currentUser.UserId}/{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+        var key = $"{userId}/{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
 
         await using var stream = file.OpenReadStream();
         var url = await fileStorage.UploadAsync(key, stream, file.ContentType, cancellationToken);
