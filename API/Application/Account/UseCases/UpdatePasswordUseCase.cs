@@ -1,3 +1,5 @@
+using API.Application.Account.Extensions;
+
 namespace API.Application.Account.UseCases;
 
 using API.Application.Authentication.Mappings;
@@ -18,16 +20,21 @@ public class UpdatePasswordUseCase(
 {
     public async Task<ServiceResult<UserDto>> Handle(UpdatePasswordDto dto, CancellationToken cancellationToken)
     {
-        if (currentUser.UserId is null)
-            return ServiceResult<UserDto>.Fail(ServiceErrorType.Unauthorized, "no_user", "User is not authenticated");
+        var userId = currentUser.RequireUserId();
 
-        var user = await repository.GetById(currentUser.UserId, cancellationToken);
+        var user = await repository.GetById(userId, cancellationToken);
         if (user is null)
-            return ServiceResult<UserDto>.Fail(ServiceErrorType.NotFound, "not_found", "User not found");
+            return ServiceResult<UserDto>.Fail(ServiceErrorType.NotFound,
+                "User not found",
+                "not_found"
+            );
 
         if (!passwordService.VerifyPassword(dto.OldPassword, user.PasswordHash, user.PasswordSalt))
-            return ServiceResult<UserDto>.Fail(ServiceErrorType.BadRequest, "wrong_password",
-                "Current password doesn't match");
+            return ServiceResult<UserDto>
+                .Fail(ServiceErrorType.BadRequest,
+                    "Current password doesn't match",
+                    "wrong_password"
+                );
 
         user.PasswordHash = passwordService.HashPassword(dto.NewPassword, out var salt);
         user.PasswordSalt = salt;

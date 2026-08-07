@@ -1,3 +1,5 @@
+using API.Application.Account.Extensions;
+
 namespace API.Application.Account.UseCases;
 
 using API.Application.Members.Mappings;
@@ -15,13 +17,9 @@ public class UpdateAccountUseCase(
 {
     public async Task<ServiceResult<MemberDto>> Handle(UpdateAccountDto dto, CancellationToken cancellationToken)
     {
-        if (currentUser.UserId is null)
-            return ServiceResult<MemberDto>.Fail(ServiceErrorType.Unauthorized,
-                errorMessage: "User is not authenticated",
-                errorCode: "no_user"
-            );
+        var userId = currentUser.RequireUserId();
 
-        var user = await repository.GetById(currentUser.UserId, cancellationToken);
+        var user = await repository.GetById(userId, cancellationToken);
         if (user is null)
             return ServiceResult<MemberDto>.Fail(ServiceErrorType.NotFound,
                 errorMessage: "User not found",

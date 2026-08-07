@@ -1,3 +1,5 @@
+using API.Application.Account.Extensions;
+
 namespace API.Application.Account.UseCases;
 
 using API.Application.Common;
@@ -12,13 +14,9 @@ public class DeletePhotoUseCase(
 {
     public async Task<ServiceResult<bool>> Handle(int photoId, CancellationToken cancellationToken)
     {
-        if (currentUser.UserId is null)
-            return ServiceResult<bool>.Fail(ServiceErrorType.Unauthorized,
-                errorMessage: "User is not authenticated",
-                errorCode: "no_user"
-            );
+        var userId = currentUser.RequireUserId();
 
-        var user = await userRepository.GetByIdWithPhotos(currentUser.UserId, cancellationToken);
+        var user = await userRepository.GetByIdWithPhotos(userId, cancellationToken);
         if (user is null)
             return ServiceResult<bool>.Fail(ServiceErrorType.NotFound,
                 errorMessage: "User not found",

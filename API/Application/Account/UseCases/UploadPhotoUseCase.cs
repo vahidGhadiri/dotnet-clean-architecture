@@ -1,3 +1,5 @@
+using API.Application.Account.Extensions;
+
 namespace API.Application.Account.UseCases;
 
 using API.Application.Common;
@@ -15,13 +17,8 @@ public class UploadPhotoUseCase(
 {
     public async Task<ServiceResult<PhotoDto>> Handle(IFormFile file, CancellationToken cancellationToken)
     {
-        if (currentUser.UserId is null)
-            return ServiceResult<PhotoDto>.Fail(ServiceErrorType.Unauthorized,
-                errorMessage: "User is not authenticated",
-                errorCode: "no_user"
-            );
-
-        var user = await userRepository.GetById(currentUser.UserId, cancellationToken);
+        var userId = currentUser.RequireUserId();
+        var user = await userRepository.GetById(userId, cancellationToken);
         if (user is null)
             return ServiceResult<PhotoDto>.Fail(ServiceErrorType.NotFound,
                 errorMessage: "User not found",
@@ -36,7 +33,7 @@ public class UploadPhotoUseCase(
         var photo = new Photo
         {
             Url = url,
-            UserId = currentUser.UserId
+            UserId = userId
         };
 
         user.Photos.Add(photo);
